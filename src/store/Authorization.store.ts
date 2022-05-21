@@ -3,12 +3,12 @@ import { createSlice } from "@reduxjs/toolkit";
 const authorization = createSlice({
     name: 'user',
     initialState: {
-        email: '',
+        user: '',
         isLogged: false
     },
     reducers: {
         login (state, { payload }){
-            return { ...state, isLogged: true, email: payload }
+            return { ...state, isLogged: true, user: payload }
         },
         logout(state){
             return { ...state, isLogged: true, email: ''}

@@ -1,46 +1,52 @@
 import React from "react";
 
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-import { Formik, Field } from "formik";
+import { Formik } from "formik";
 import * as Yup from "yup";
+import { useDispatch, useSelector } from 'react-redux';
 
-import { useDispatch } from 'react-redux';
+import { login } from '../../store/Authorization.store' 
+import { RootState } from "../../store";
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
 export default function Signin() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+  
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const data = new FormData(event.currentTarget);
-      console.log({
-        email: data.get('email'),
-        password: data.get('password'),
-      });
-  };
+  const initialValues = { email: "", password: "" };
+
+  const validationSchema = Yup.object({
+    email: Yup.string().email("E-mail inválido.").required("O campo email é obrigatório."),
+    password: Yup.string().required("O campo senha é obrigatório").min(8, "Senha muito curta"),
+  })
+  
+  const {email, password} = useSelector((state: RootState) => state.userDefault)
+
   return (
       <Formik 
-      initialValues={{ email: "", password: "" }} 
-      validationSchema={Yup.object({
-          email: Yup.string().email("E-mail inválido.").required("O campo email é obrigatório."),
-          password: Yup.string().required("O campo senha é obrigatório").min(8, "Senha muito curta"),
-      })}
+      initialValues={initialValues} 
+      validationSchema={validationSchema}
       onSubmit={(values, actions) => {
-          alert(JSON.stringify(values, null, 2));
-          actions.resetForm();
+          console.log(values.email, values.password)
+          if(values.email === email && values.password === password){
+            dispatch(login('testes'))
+            localStorage.setItem('authorized', 'true');
+            navigate('/')
+          }else{
+            alert('Login ou senha incorretos');
+            actions.resetForm();
+            localStorage.setItem('authorized', 'false');
+          }   
       }}
       >
   {formik => (
@@ -50,17 +56,18 @@ export default function Signin() {
         <Box
           sx={{
             display: 'flex',
+            paddingTop: 30,
             justifyContent: 'center',
-            marginTop: 20,
             flexDirection: 'column',
             alignItems: 'center',
           }}
         >
-          <Typography component="h1" variant="h5">
+          <Typography component="h1" variant="h5" sx={{color:'text.primary'}}>
             Login
           </Typography>
           <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
+              sx={{bgcolor:'white', borderRadius: 2}}
               margin="normal"
               required
               fullWidth
@@ -75,6 +82,7 @@ export default function Signin() {
               helperText={formik.touched.email && formik.errors.email}
             />
             <TextField
+              sx={{bgcolor:'white', borderRadius: 2}}
               margin="normal"
               required
               fullWidth
@@ -94,7 +102,7 @@ export default function Signin() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Login
+              Entrar
             </Button>
           </Box>
         </Box>
